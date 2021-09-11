@@ -11,15 +11,10 @@
 #include <string>
 
 
-//variable declaration
-//float fSerial[]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-//int fSerialSize= sizeof(fSerial)/sizeof(fSerial[0]);
-
 static const int ARR_DATA_SIZE=14;
 float fSerial[ARR_DATA_SIZE]={0};
 static const int fSerialSize=ARR_DATA_SIZE;
 
-std::vector<float> s_data;
 std::map<std::string,float> status_data {{"ref_temp",0.0f},{"current_temp",0.0f},{"error",0.0f},{"integral",0.0f}};
 
 static const int ARR_RULE_SIZE=9;
@@ -43,7 +38,6 @@ char recv_chars[NUM_CHARS];
 int dutyCycleOne=0;
 constexpr float vRef = 1.1;
 constexpr int invSensorScale=100;//(1/scale)
-//constexpr int ref_temp=30;
 
 //Input/Output variable mapping
 int inOne=0;
@@ -68,54 +62,8 @@ void serialData()
         strcat(sData,",");
     };
     Serial.println(sData);
-    //strcpy(sData,"");
   }
 }
-
-
-//s_data is a vector with the data to send
-//THIS FUNCTION IS NOT WORKING 20210311, memory issues|
-void serial_data(){
-
-  std::ostringstream sdata;
-
-  if (!s_data.empty()){
-    std::copy(s_data.begin(),s_data.end()-1,std::ostream_iterator<int>(sdata,","));
-    sdata << s_data.back();
-  }
-  
-  std::cout <<sdata.str().c_str()<<std::endl;
-
-}
-
-//When we passs a class argument as reference, we access the methods inside with the '.' operator
-/*
-void updateData(float arrData[], const FuzzyController& fc, float& out, const float& refTemp, const float& currentTemp, const float& error)
-{
-  fuzzyInErrorRegion* inErrR = fc.getInErrorRegion();
-  fuzzyInDErrorRegion* inDErrR = fc.getInDErrorRegion();
-  fuzzyOutRegion* outR = fc.getOutRegion();
-
-  arrData[0]=(inErrR->negErr)->getPertinence();
-  arrData[1]=(inErrR->zeroErr)->getPertinence();
-  arrData[2]=(inErrR->posErr)->getPertinence();
-
-  arrData[3]=(inDErrR->negDErr)->getPertinence();
-  arrData[4]=(inDErrR->zeroDErr)->getPertinence();
-  arrData[5]=(inDErrR->posDErr)->getPertinence();
-
-  arrData[6]=(outR->negOut)->getPertinence();
-  arrData[7]=(outR->zeroOut)->getPertinence();
-  arrData[8]=(outR->posOut)->getPertinence();
-
-  arrData[9]=out;
-  arrData[10]=fc.getOutput();
-  arrData[13]=error;
-
-  arrData[11]=refTemp;
-  arrData[12]=currentTemp;
-}
-*/
 
 //When we passs a class argument as reference, we access the methods inside with the '.' operator
 void update_data(float arrData[], const FuzzyController& fc, const std::map<std::string,float>& status_data){
@@ -144,38 +92,6 @@ void update_data(float arrData[], const FuzzyController& fc, const std::map<std:
   arrData[12]=status_data.find("current_temp")->second;
 
 }
-
-/*
-void update_data(std::vector<float>& data, const FuzzyController& fc, const std::map<std::string,float>& status_data){
-
-  //Serial.println("update_data::BEGIN");
-  fuzzyInErrorRegion* inErrR = fc.getInErrorRegion();
-  fuzzyInDErrorRegion* inDErrR = fc.getInDErrorRegion();
-  fuzzyOutRegion* outR = fc.getOutRegion();
-
-  if (data.size() == 14){
-    data.at(0) = (inErrR->negErr)->getPertinence();
-    data.at(1) = (inErrR->zeroErr)->getPertinence();
-    data.at(2) = (inErrR->posErr)->getPertinence();
-
-    data.at(3) = (inDErrR->negDErr)->getPertinence();
-    data.at(4) = (inDErrR->zeroDErr)->getPertinence();
-    data.at(5) = (inDErrR->posDErr)->getPertinence();
-
-    data.at(6) = (outR->negOut)->getPertinence();
-    data.at(7) = (outR->zeroOut)->getPertinence();
-    data.at(8) = (outR->posOut)->getPertinence();
-
-    data.at(9) = (status_data.find("integral")->second);
-    data.at(10) = (fc.getOutput());
-    data.at(13) = (status_data.find("error")->second);
-
-    data.at(11) = (status_data.find("ref_temp")->second);
-    data.at(12) = (status_data.find("current_temp")->second);
-  }
-  //Serial.println("update_data::END");
-}
-*/
 
 int getAnalogTemp( int& analogInput )
 {
@@ -244,13 +160,8 @@ void setup() {
   //initialize serial communication at 9600 bps:
   Serial.begin(9600);
 
-  //Timer1 initialization
-  //Timer1.initialize(2000000);
   Timer1.initialize(500000);
   Timer1.attachInterrupt(serialData);
-  //Timer1.attachInterrupt(serial_data);
-
-  //s_data.reserve(11);
 
 }
 
@@ -305,20 +216,6 @@ void loop() {
     //integral
     out = out + fcontroller->getOutput();
 
-    
-    std::map<std::string,float>::iterator it = status_data.find("integral");
-    if (it != status_data.end()){
-      Serial.println("found key");
-      it->second=out;
-      Serial.println(out);
-      Serial.println(it->second);
-    }
-    
-      
-    //status_data.find("integral")->second=out;
-
-    status_data["integral"]=out;
-
 
     if (out >= 255)
       out = 255;
@@ -328,9 +225,6 @@ void loop() {
 
     analogWrite(outOne,out);
     analogWrite(outTwo,out);
-
-    //updateData(fSerial,*fcontroller,out,ref_temp,rand_temp,err);
-    //update_data(s_data,*fcontroller,status_data);
 
     update_data(fSerial,*fcontroller,status_data);
   */
@@ -359,14 +253,6 @@ void loop() {
     fcontroller->loadInputs(err,derr);
     fcontroller->generateOutput();
 
-    //Serial.print("rules applied = ");
-    //fcontroller->getRulesApplied(rulesApplied);
-
-    //for(int i = 0; i < ARR_RULE_SIZE; i++)
-    //  Serial.print(rulesApplied[i]);
-
-    //Serial.println();
-
     //integral
     out = out + fcontroller->getOutput();
 
@@ -382,11 +268,7 @@ void loop() {
     analogWrite(outOne,out);
     analogWrite(outTwo,out);
 
-    //updateData(fSerial,*fcontroller,out,ref_temp,analogTemp,err);
-
     update_data(fSerial,*fcontroller,status_data);
-
     
-    //delay(500);
     }
 }
