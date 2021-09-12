@@ -2,10 +2,6 @@
 #include <TimerOne.h>
 #include <FuzzyController.h>
 #include <ArduinoSTL.h>
-#include <iterator>
-#include <sstream>
-#include <iostream>
-#include <algorithm>
 #include <map>
 #include <string>
 
