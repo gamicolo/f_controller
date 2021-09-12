@@ -2,7 +2,6 @@
 #include <TimerOne.h>
 #include <FuzzyController.h>
 #include <ArduinoSTL.h>
-#include <vector>
 #include <iterator>
 #include <sstream>
 #include <iostream>
@@ -165,69 +164,7 @@ void setup() {
 
 }
 
-//float r = 186; //20°
-//float r = 47; //5°
-//float rand_temp = 5.0;
-
 void loop() {
-
-  /*
-  read_serial(main_run, new_data, recv_chars);
-
-  if (main_run){
-
-    //Serial.println("loop::main_run::BEGIN");
-    if (new_data){
-      ref_temp = atof(recv_chars);
-      status_data["ref_temp"]=ref_temp;
-      new_data = false;
-    }
-
-    if (rand_temp >= ref_temp){
-      r = r + random(-2,2);
-    }
-    else
-      r = r + random(10);
-
-    rand_temp = convertAnalogTemp(r,vRef, invSensorScale);
-
-    //status_data.insert(std::pair<std::string,float>("current_temp",rand_temp));-->NOK for update
-    status_data["current_temp"]=rand_temp;
-
-
-    err=ref_temp-rand_temp;
-    derr=(err-err_0);
-    err_0=err;
-
-
-    status_data["error"]=rand_temp;
-
-    fcontroller->loadInputs(err,derr);
-    fcontroller->generateOutput();
-
-    //Serial.print("rules applied = ");
-    //fcontroller->getRulesApplied(rulesApplied);
-
-    //for(int i = 0; i < ARR_RULE_SIZE; i++)
-    //  Serial.print(rulesApplied[i]);
-
-    //Serial.println();
-
-    //integral
-    out = out + fcontroller->getOutput();
-
-
-    if (out >= 255)
-      out = 255;
-    
-    if (out < 0)
-      out = 0;
-
-    analogWrite(outOne,out);
-    analogWrite(outTwo,out);
-
-    update_data(fSerial,*fcontroller,status_data);
-  */
  
   //Planta
   read_serial(main_run, new_data, recv_chars);
