@@ -7,13 +7,12 @@
 
 
 static const int ARR_DATA_SIZE=14;
-float fSerial[ARR_DATA_SIZE]={0};
-static const int fSerialSize=ARR_DATA_SIZE;
+float f_serial[ARR_DATA_SIZE]={0};
+static const int f_serial_size=ARR_DATA_SIZE;
 
 std::map<std::string,float> status_data {{"ref_temp",0.0f},{"current_temp",0.0f},{"error",0.0f},{"integral",0.0f}};
 
 static const int ARR_RULE_SIZE=9;
-bool rulesApplied[ARR_RULE_SIZE]={0};
 
 float err=0;
 float err_0=0;
@@ -21,42 +20,39 @@ float derr=0;
 float out=0;
 
 float ref_temp=0;
-//float ref_temp=40;
 
 bool main_run = false;
-//bool main_run = true;
 bool new_data = false;
 const byte NUM_CHARS = 32;
 char recv_chars[NUM_CHARS];
 
 //constant declaration
-int dutyCycleOne=0;
-constexpr float vRef = 1.1;
-constexpr int invSensorScale=100;//(1/scale)
+constexpr float v_ref = 1.1;
+constexpr int inv_sensor_scale=100;//(1/scale)
 
 //Input/Output variable mapping
-int inOne=0;
-int outOne=3;
-int outTwo=5;
+int in_one=0;
+int out_one=3;
+int out_two=5;
 
 //object instantiation
-FuzzyController* fcontroller = new FuzzyController(inOne, outOne, outTwo);
+FuzzyController* fcontroller = new FuzzyController(in_one, out_one, out_two);
 
 
 //function definition
-void serialData()
+void serial_data()
 {
   if (main_run == true){
-    char sData[100];
-    memset(sData, 0, sizeof sData);//--> to clear the data allocated in the memory pointed by the array
+    char data[100];
+    memset(data, 0, sizeof data);//--> to clear the data allocated in the memory pointed by the array
     char buffer[10];
-    for (int i=0; i < fSerialSize;i++){
-      dtostrf(fSerial[i],4,2,buffer);
-      strcat(sData,buffer);
-      if (i < (fSerialSize-1))
-        strcat(sData,",");
+    for (int i=0; i < f_serial_size;i++){
+      dtostrf(f_serial[i],4,2,buffer);
+      strcat(data,buffer);
+      if (i < (f_serial_size-1))
+        strcat(data,",");
     };
-    Serial.println(sData);
+    Serial.println(data);
   }
 }
 
@@ -88,25 +84,25 @@ void update_data(float arrData[], const FuzzyController& fc, const std::map<std:
 
 }
 
-int getAnalogTemp( int& analogInput )
+int get_analog_temp( int& analogInput )
 {
-  int adcRead = 0;
+  int adc_read = 0;
 
   // Average 50 readings for accurate reading
   for(int i = 0; i < 50; i++) {
-     adcRead += analogRead(analogInput); 
+     adc_read += analogRead(analogInput); 
      delay(20);
   }
-  return adcRead*0.02;
+  return adc_read*0.02;
 }
 
-float convertAnalogTemp(int adcValue, float vRef, int invSensorScale)
+float convert_analog_temp(int adc_value, float v_ref, int inv_sensor_scale)
 {
   //to get the temperature 
   //--> temp = analog_ref * (vref/1024) * (1/lm_scale_factor) 
   //--> temp = [0-1023] * (5 /1024) * (1/.01)
-  float analogTemp = adcValue*(vRef/1024)*(invSensorScale);
-  return analogTemp;
+  float analog_temp = adc_value*(v_ref/1024)*(inv_sensor_scale);
+  return analog_temp;
 }
 
 void read_serial( bool& main_run, bool& new_data, char recv_chars[]) {
@@ -156,7 +152,7 @@ void setup() {
   Serial.begin(9600);
 
   Timer1.initialize(500000);
-  Timer1.attachInterrupt(serialData);
+  Timer1.attachInterrupt(serial_data);
 
 }
 
@@ -173,8 +169,9 @@ void loop() {
       new_data = false;
     }
 
-    int adcTemp = getAnalogTemp(inOne);
-    float current_temp = convertAnalogTemp(adcTemp,vRef, invSensorScale);
+    int adc_temp = get_analog_temp(in_one);
+    float current_temp = convert_analog_temp(adc_temp,v_ref, inv_sensor_scale);
+
     status_data["current_temp"] = current_temp;
 
     err=ref_temp-current_temp;
@@ -198,10 +195,10 @@ void loop() {
       out = 0;
 
 
-    analogWrite(outOne,out);
-    analogWrite(outTwo,out);
+    analogWrite(out_one,out);
+    analogWrite(out_two,out);
 
-    update_data(fSerial,*fcontroller,status_data);
+    update_data(f_serial,*fcontroller,status_data);
     
     }
 }
